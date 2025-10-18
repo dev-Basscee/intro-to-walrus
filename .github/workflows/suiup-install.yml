@@ -1,0 +1,44 @@
+name: Install Sui CLI with suiup
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  install-sui:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl tar
+
+      - name: Install suiup
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/MystenLabs/suiup/main/install.sh | sh
+
+      - name: Install Sui CLI via suiup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use GITHUB_TOKEN to avoid GitHub API rate-limits when querying releases
+          GITHUB_TOKEN=$GITHUB_TOKEN suiup install sui@testnet -y
+
+      - name: Verify Sui version
+        run: |
+          sui --version
+
+      - name: Install walrus and mvr
+        run: |
+          suiup install walrus -y
+          suiup install mvr -y
+
+      - name: Show installed binaries
+        run: |
+          suiup show
